@@ -16,7 +16,6 @@ def trainer(args, model, arrays):
     y_min, y_max = args.get('y_min', None), args.get('y_max', None)
     oracle_min, oracle_max = args.get('oracle_min', None), args.get('oracle_max', None)
     seed = args.get('seed', 0)
-
     patience = args.get('patience', None)
     num_epochs = args.get('num_epochs', 100)
     base_lr = args.get('base_lr', 1e-3)
@@ -41,7 +40,7 @@ def trainer(args, model, arrays):
     oracle_train_arr = arrays.get('oracle_train')
     oracle_val_arr = arrays.get('oracle_val')
     train_dataloader = create_dataloader_from_arrays(
-        x_train_arr, y_train_arr, batch_size=batch_size, shuffle=True)
+        x_train_arr, y_train_arr, batch_size=batch_size, shuffle=True, seed=seed)
 
     # ---------- Metrics ----------
     metrics = {
@@ -56,7 +55,7 @@ def trainer(args, model, arrays):
         "best_epoch": None,
         "best_val_loss": None,
     }
-
+    
     # ---------- Checkpoint ----------
     ckpt_path = (
         f"{model_path}{dataset_name}/"
