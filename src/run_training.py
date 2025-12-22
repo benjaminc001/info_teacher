@@ -49,7 +49,10 @@ def none_or_int(x):
         return None
     else:
         return int(x)
-    
+
+os.makedirs("./experiments", exist_ok=True)
+os.makedirs("./models", exist_ok=True)
+
 parser = ArgumentParser()
 parser.add_argument("--dataset_name", default="ccpp",type=str, help="Name of the dataset to use for training")
 parser.add_argument("--model_path", type=str, default="./models/", help="Path to save the trained model")
@@ -126,7 +129,8 @@ if __name__ == "__main__":
         X_train, X_test, y_train, y_test, oracle_train, oracle_test = train_test_split(x, y, oracle, test_size=args.test_size, random_state=412)
     else:
         X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=args.test_size, random_state=412)
-
+    if args.dataset_name == "noisy_ccpp":
+        y_train = y_train + np.random.default_rng(8).normal(0.0, 2.5, size=y_train.shape)
     y_max, y_min = np.max(y_train), np.min(y_train)
     if oracle_train is not None:
         oracle_max, oracle_min = np.max(oracle_train), np.min(oracle_train)
