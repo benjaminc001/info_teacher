@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 from preprocess_data import normalize_features, minmax_scale_features
 from neural_networks.mlp import MLP
 from neural_networks.resnet import ResNetRegressor
+from neural_networks.linear_model import LinearModel
+from neural_networks.ft_transformer import FTTransformer
 from neural_networks.test import test
 from neural_networks.trainer import trainer
 from metrics.tsp import mi_assessment as tsp
@@ -12,7 +14,6 @@ from neural_networks.utils import set_seed, save_experiment_results
 from datetime import datetime
 import os
 from torch import nn
-from typing import Union
 
 def build_mlp_model(args):
     input_size = args.get('input_size', 10)
@@ -31,6 +32,18 @@ def build_resnet_model(args):
 
     model = ResNetRegressor(input_size, output_size, num_blocks, hidden_size)
     return model
+def build_linear_model(args):
+    input_size = args.get('input_size', 10)
+    output_size = args.get('output_size', 1)
+    num_units = args.get('n_units', 10)
+
+    model = LinearModel(input_size, output_size, num_units)
+    return model
+def build_transformer(args):
+    input_size = args.get('n_features', 10)
+    output_size = args.get('output_size', 1)
+    model = FTTransformer(n_features=input_size, output_dim=output_size)
+    return model
 def none_or_int(x):
     if x.lower() == "none":
         return None
@@ -48,7 +61,7 @@ parser.add_argument("--device", type=str, default="cuda", help="Device to use fo
 parser.add_argument("--network_name", type=str, default="shallow", help="Name of the neural network architecture")
 parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
 parser.add_argument("--num_epochs", type=int, default=500, help="Number of training epochs")
-parser.add_argument("--batch_size", type=int, default=32, help="Batch size for training")
+parser.add_argument("--batch_size", type=int, default=256, help="Batch size for training")
 parser.add_argument("--base_lr", type=float, default=1e-4, help="Base learning rate for the optimizer")
 parser.add_argument("--weight_decay", type=float, default=1e-8, help="Weight decay for the optimizer")
 parser.add_argument("--optimizer", type=str, default="adamw", help="Optimizer to use for training")
@@ -75,9 +88,21 @@ arg_resnet_network = {
         'hidden_size': 64,
         'normalization':'layer',
     }  
+
+arg_linear_model =  {
+    'input_size': x.shape[1],
+    'output_size': y.shape[1],
+    'n_units' : 1
+}
+
+arg_transformer = {
+    'n_features': x.shape[1],
+    'output_size': y.shape[1],
+}
+
 def build_network():
     if args.network_name == "shallow":
-        arg_mlp_network['hidden_sizes'] = [8]
+        arg_mlp_network['hidden_sizes'] = [32]
     elif args.network_name == "deep":
         arg_mlp_network['hidden_sizes'] = [128]*3
     elif args.network_name == "overparameterized":
@@ -85,10 +110,13 @@ def build_network():
 
     elif args.network_name == "small":
         arg_mlp_network["hidden_sizes"] = [2]
-        arg_mlp_network["activation"] = nn.Identity
     model = build_mlp_model(arg_mlp_network)
     if args.network_name == "resnet":
         model = build_resnet_model(arg_resnet_network)
+    if args.network_name == "linear":
+        model = build_linear_model(arg_linear_model)
+    if args.network_name == "transformer":
+        model = build_transformer(arg_transformer)
     return model
 
 if __name__ == "__main__":
@@ -104,7 +132,7 @@ if __name__ == "__main__":
         oracle_max, oracle_min = np.max(oracle_train), np.min(oracle_train)
     X_train, X_test = normalize_features(X_train, X_test)
     y_train, y_test = minmax_scale_features(y_train, y_test)
-    training_size = np.logspace(2, np.log10(X_train.shape[0]), num=args.n_points, dtype=int)
+    training_size = np.logspace(np.log10(256), np.log10(X_train.shape[0]), num=args.n_points, dtype=int)
     results = {"mi":np.empty((args.n_seeds, len(training_size))), 
                "mse":np.empty((args.n_seeds, len(training_size))), 
                "max_riv": np.empty((args.n_seeds, len(training_size))),
@@ -178,7 +206,7 @@ if __name__ == "__main__":
     snapshot_path = f"./experiments/{args.dataset_name}/{args.network_name}"
     os.makedirs(snapshot_path, exist_ok = True)
     date = datetime.now().strftime("%Y%m%d_%H%M%S")
-    config_file = os.path.join(snapshot_path, f'config_{args.network_name}_{date}.txt')
+    config_file = os.path.join(snapshot_path, f'config_{args.network_name}_{args.optimizer}_{date}.txt')
     config_items = []
     for key, value in args.__dict__.items():
         config_items.append(f'{key}: {value}\n')

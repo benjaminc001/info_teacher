@@ -1,30 +1,29 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from argparse import ArgumentParser
+#from copy import deepcopy
 import os
 
 parser = ArgumentParser()
 parser.add_argument("--optimizer_name", default="sgd")
 parser.add_argument("--network_name", default="small")
 parser.add_argument("--dataset_name", default="ccpp")
-parser.add_argument("--set_log_mse", default=True)
+parser.add_argument("--set_rmse", default=True)
 
 args = parser.parse_args()
-
 network_name_base = str.lower(args.network_name)
 dataset_name_base = str.lower(args.dataset_name)
 results_path = f"./experiments/{dataset_name_base}/{network_name_base}/results_{args.optimizer_name}_{dataset_name_base}_{network_name_base}.npz"
 saving_path_root = f"./experiments/figures/{dataset_name_base}/"
 os.makedirs(saving_path_root, exist_ok=True)
-saving_path = os.path.join(saving_path_root, f"{dataset_name_base}_{network_name_base}_fig.pdf")
+saving_path = os.path.join(saving_path_root, f"{dataset_name_base}_{network_name_base}_{args.optimizer_name}_fig.pdf")
 
 
 is_synthetic = (dataset_name_base not in ["sarcos", "ccpp", "housing", "reduced_housing", "noisy_ccpp", "unfavorable_housing"])
 
-def generate_figure(results_path, saving_path, set_log_mse=True):
-
+def generate_figure(results_path, saving_path, set_rmse):
     metrics_dict = {"mi": "Mutual Information", 
-                    "mse":"MSE", 
+                    "mse":"RMSE" if set_rmse else "MSE" , 
                     "max_riv":"R.I.V", 
                     "r2": "$R^2$", 
                     "oracle": "Ground Truth error"}
@@ -41,16 +40,21 @@ def generate_figure(results_path, saving_path, set_log_mse=True):
     fig.set_size_inches((6*len(metrics), 4))
     for i, metric in enumerate(metrics):
         for j in range(n_seeds):
-            ax[i].plot(x, results_dict[metric][j, :])
+            if set_rmse == True:
+                if metric == "mse":
+                    ax[i].plot(x, np.sqrt(results_dict[metric][j, :]))
+                else:
+                    ax[i].plot(x, results_dict[metric][j, :])
+            else:
+                ax[i].plot(x, results_dict[metric][j, :])
+
         ax[i].set_title(metrics_dict[metric])
         ax[i].grid()
-        if metric == "mse":
-            if set_log_mse:
-                ax[i].set_yscale("log")
+        
     plt.tight_layout()
     plt.savefig(saving_path)
 
 if __name__ == "__main__":
-    generate_figure(results_path, saving_path, args.set_log_mse)
+    generate_figure(results_path, saving_path, args.set_rmse)
 
     

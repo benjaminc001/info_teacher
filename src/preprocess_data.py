@@ -4,6 +4,7 @@ import pandas as pd
 from metrics.tsp import tsp
 from sklearn.preprocessing import QuantileTransformer, MinMaxScaler, StandardScaler
 from scipy.io import loadmat
+from sklearn.datasets import fetch_california_housing
 
 def gaussianize_features(X):
     qt = QuantileTransformer(output_distribution='normal', random_state=0)
@@ -48,18 +49,15 @@ if __name__ == "__main__":
     print(f"Preprocessed SARcos Inverse Dynamics data saved to {sarcos_preprocessed_path}sarcos_inv.npz")
 
     print("Preprocessing Housing dataset...")
-    housing_path = "./raw_data/housing/"
-    housing_preprocessed_path = "./array_data/housing/"
+    #housing_path = "./raw_data/housing/"
+    #housing_preprocessed_path = "./array_data/housing/"
 
-    df = pd.read_csv(f"{housing_path}housing.csv")
-    print("Original data shape:", df.shape)
-    print("Columns with missing values:", df.isnull().sum()[df.isnull().sum() > 0])
-    df = df.dropna()
-    print("Data shape after removing missing values:", df.shape)    
-    df = df.drop(columns=['ocean_proximity'])
-    data = df.to_numpy().astype(np.float32)
-    X = data[:, :-1]
-    Y = data[:, -1].reshape(-1, 1)
+    #df = pd.read_csv(f"{housing_path}housing.csv")
+    X, Y = fetch_california_housing(data_home="./raw_data/housing", download_if_missing=True,return_X_y=True)
+    housing_preprocessed_path = "./array_data/"
+    print(f"housing X shape :{X.shape}")
+    X = X.astype(np.float32)
+    Y = Y.astype(np.float32).reshape(-1, 1)
     np.savez_compressed(f"{housing_preprocessed_path}housing.npz", x=X, y=Y)
     print(f"Preprocessed Housing data saved to {housing_preprocessed_path}housing.npz")
     
@@ -93,6 +91,5 @@ if __name__ == "__main__":
     print(f"Preprocessed CCPP data saved to {ccpp_preprocessed_path}ccpp.npz")
     
     noisy_ccpp_path = "./array_data/noisy_ccpp/"
-    Y_noisy = Y + np.random.default_rng(9).normal(0.0, 1.0, size = Y.shape)
     os.makedirs(noisy_ccpp_path, exist_ok= True)
-    np.savez_compressed(f"{noisy_ccpp_path}noisy_ccpp.npz", x=X, y=Y_noisy)    
+    np.savez_compressed(f"{noisy_ccpp_path}noisy_ccpp.npz", x=X, y=Y)    
