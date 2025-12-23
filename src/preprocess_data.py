@@ -73,7 +73,7 @@ if __name__ == "__main__":
     os.makedirs(housing_reduced_path, exist_ok=True)
     np.savez_compressed(f"{housing_reduced_path}reduced_housing.npz", x=X_selected, y=Y)
 
-    X_unselected = X[:, indices[2:]]
+    X_unselected = X[:, indices[3:]]
 
     housing_unfavorable_path = "./array_data/unfavorable_housing/"
     os.makedirs(housing_unfavorable_path, exist_ok=True)
