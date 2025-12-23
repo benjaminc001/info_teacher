@@ -130,7 +130,8 @@ if __name__ == "__main__":
     else:
         X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=args.test_size, random_state=412)
     if args.dataset_name == "noisy_ccpp":
-        y_train = y_train + np.random.default_rng(8).normal(0.0, 2.5, size=y_train.shape)
+        sc = 0.05*y_train.std()
+        y_train = y_train + np.random.default_rng(8).normal(0.0, sc, size=y_train.shape)
     y_max, y_min = np.max(y_train), np.min(y_train)
     if oracle_train is not None:
         oracle_max, oracle_min = np.max(oracle_train), np.min(oracle_train)
