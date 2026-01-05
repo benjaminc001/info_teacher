@@ -60,7 +60,7 @@ parser.add_argument("--n_seeds", type=int, default=8, help="Number of different 
 parser.add_argument("--patience", type=none_or_int, default=10, help="Patience for early stopping")
 parser.add_argument("--test_size", type=float, default=2_000, help="Number of samples to use for testing")
 parser.add_argument("--n_points", type=int, default=30, help="Number of data points to generate for experiment")
-parser.add_argument("--device", type=str, default="cuda", help="Device to use for training (cpu or cuda)")
+parser.add_argument("--device", type=str, default="cpu", help="Device to use for training (cpu or cuda)")
 parser.add_argument("--network_name", type=str, default="shallow", help="Name of the neural network architecture")
 parser.add_argument("--seed", type=int, default=0, help="Random seed for reproducibility")
 parser.add_argument("--num_epochs", type=int, default=500, help="Number of training epochs")
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     else:
         X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=args.test_size, random_state=412)
     if args.dataset_name == "noisy_ccpp":
-        sc = 0.08*y_train.std()
+        sc = 1.5*y_train.std()
         y_train = y_train + np.random.default_rng(8).normal(0.0, sc, size=y_train.shape)
     y_max, y_min = np.max(y_train), np.min(y_train)
     if oracle_train is not None:
