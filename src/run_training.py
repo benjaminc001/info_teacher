@@ -199,7 +199,8 @@ if __name__ == "__main__":
             arrs_test = {"x_test": X_test, "y_test": y_test, "prediction": prediction,}
             mse, mi, r2 = test(train_args, arrs_test)
             if oracle is not None:
-                oracle_metric = np.mean((prediction - oracle_test)**2)
+                # oracle_metric = np.mean((prediction - oracle_test)**2)
+                oracle_metric = np.mean(( (oracle_test - oracle_min)/(oracle_max - oracle_min) - prediction)**2)
                 results["oracle"][j, k] = oracle_metric 
             results["mi"][j, k] = mi
             results["mse"][j, k] = mse
