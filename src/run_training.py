@@ -201,7 +201,6 @@ if __name__ == "__main__":
             if oracle is not None:
                 prediction_unnormalized = prediction * (y_max - y_min) + y_min
                 oracle_metric = np.mean((oracle_test - prediction_unnormalized)**2)
-                print(f"oracle MSE: {oracle_metric:.4f}")
                 results["oracle"][j, k] = oracle_metric 
             results["mi"][j, k] = mi
             results["mse"][j, k] = mse
