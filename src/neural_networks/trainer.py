@@ -97,9 +97,11 @@ def trainer(args, model, arrays):
         _, train_mi, r2_train = test(args_test, arrs_train)
         val_epoch_loss, val_mi, r2_val = test(args_test, arrs_val)
         if oracle_train_arr is not None:
+            oracle_train_arr = (oracle_train_arr - oracle_min) / (oracle_max - oracle_min)
             oracle_train_loss = np.mean((oracle_train_arr - training_prediction)**2)*(oracle_max - oracle_min)**2
             metrics["train_oracle_loss"].append(oracle_train_loss)
         if oracle_val_arr is not None:
+            oracle_val_arr = (oracle_val_arr - oracle_min) / (oracle_max - oracle_min)
             oracle_val_loss = np.mean((oracle_val_arr - val_prediction)**2)*(oracle_max - oracle_min)**2
             metrics["val_oracle_loss"].append(oracle_val_loss)
 
@@ -144,5 +146,4 @@ def trainer(args, model, arrays):
     if patience is not None and metrics["best_epoch"] is not None:
         checkpoint = torch.load(final_model_path, weights_only=False)
         model.load_state_dict(checkpoint["model_state_dict"])
-
     return model, metrics
