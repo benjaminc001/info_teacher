@@ -1,6 +1,14 @@
 import torch
 from torch import nn
 
+class SharedAttention(nn.Module):
+    def __init__(self, dim, n_heads):
+        super().__init__()
+        self.attention = nn.MultiheadAttention(embed_dim=dim, num_heads=n_heads, batch_first=True)
+    def forward(self, x):
+        attn_output, _ = self.attention(x, x, x)
+        return attn_output
+
 class FeatureTokenizer(nn.Module):
     def __init__(self, n_features, d_token):
         super().__init__()
@@ -9,6 +17,19 @@ class FeatureTokenizer(nn.Module):
     
     def forward(self, x):
         return x.unsqueeze(-1)*self.weight + self.bias
+
+class FFN(nn.Module):
+    def __init__(self, dim, dropout=0.1):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(dim, 4*dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(4*dim, dim),
+            nn.Dropout(dropout)
+        )
+    def forward(self, x):
+        return self.net(x)
 
 class FTTransformer(nn.Module):
     def __init__(self, 
@@ -24,15 +45,13 @@ class FTTransformer(nn.Module):
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, d_token))
 
-        encoder_layer = nn.TransformerEncoderLayer(
-            d_model=d_token,
-            nhead=n_heads,
-            dropout=dropout,
-            batch_first = True,
-        )
+        self.attn =  SharedAttention(d_token, n_heads)
 
-        self.transformer = nn.TransformerEncoder(encoder_layer, 
-                                                 num_layers=n_layers)
+        self.ffns = nn.ModuleList([FFN(d_token, dropout) for _ in range(n_layers)])
+
+        self.norm_attn = nn.LayerNorm(d_token)
+
+        self.norm_ffns = nn.ModuleList([nn.LayerNorm(d_token) for _ in range(n_layers)])
         
         self.head = nn.Sequential(
             nn.LayerNorm(d_token),
@@ -45,7 +64,9 @@ class FTTransformer(nn.Module):
         cls = self.cls_token.expand(B, -1, -1)
         x = torch.cat([cls, x], dim=1)
 
-        x = self.transformer(x)
+        for ff, norm in zip(self.ffns, self.norm_ffns):
+            x = x + self.attn(self.norm_attn(x))
+            x = x + ff(norm(x))
 
         cls_out = x[:, 0]
 

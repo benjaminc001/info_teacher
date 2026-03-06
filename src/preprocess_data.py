@@ -38,14 +38,15 @@ if __name__ == "__main__":
 
     data = mat_data.get('sarcos_inv', None)
     data_test = mat_data_test.get('sarcos_inv_test', None)
-    data = np.vstack((data, data_test))
     data = data.astype(np.float32)
-    
+    data_test = data_test.astype(np.float32)
 
-    X = data[:, 0:21]
-    Y = data[:, 21].reshape(-1, 1)
-    np.savez_compressed(f"{sarcos_preprocessed_path}sarcos_inv.npz", x=X, y=Y)
-
+    X_train = data[:, 0:21]
+    Y_train = data[:, 21].reshape(-1, 1)
+    X_test = data_test[:, 0:21]
+    Y_test = data_test[:, 21].reshape(-1, 1)
+    np.savez_compressed(f"{sarcos_preprocessed_path}sarcos_inv.npz", x=X_train, y=Y_train)
+    np.savez_compressed(f"{sarcos_preprocessed_path}sarcos_inv_test.npz", x=X_test, y=Y_test)
     print(f"Preprocessed SARcos Inverse Dynamics data saved to {sarcos_preprocessed_path}sarcos_inv.npz")
 
     print("Preprocessing Housing dataset...")
@@ -74,11 +75,29 @@ if __name__ == "__main__":
     np.savez_compressed(f"{housing_reduced_path}reduced_housing.npz", x=X_selected, y=Y)
 
     X_unselected = X[:, indices[3:]]
-
+    X_unselected = X_unselected[:, -2:]
     housing_unfavorable_path = "./array_data/unfavorable_housing/"
     os.makedirs(housing_unfavorable_path, exist_ok=True)
-    np.savez_compressed(f"{housing_unfavorable_path}unfavorable_housing.npz", x=X_unselected, y=Y)
+    np.savez_compressed(f"{housing_unfavorable_path}unfavorable_housing.npz", x=X_selected, y=Y)
 
+    X_selected_2 = X[:, indices[:3]]
+    housing_reduced_2_path = "./array_data/reduced_housing_2/"
+    os.makedirs(housing_reduced_2_path, exist_ok=True)
+    np.savez_compressed(f"{housing_reduced_2_path}reduced_housing_2.npz", x=X_selected_2, y=Y)
+    print(f"Preprocessed Reduced Housing data 2 saved to {housing_reduced_2_path}reduced_housing_2.npz")
+
+    housing_unfavorable_path = "./array_data/unfavorable_housing_2/"
+    os.makedirs(housing_unfavorable_path, exist_ok=True)
+    np.savez_compressed(f"{housing_unfavorable_path}unfavorable_housing_2.npz", x=X_selected_2, y=Y)
+    print("Housing Dataset complete")
+    housing_full_path = "./array_data/housing/"
+    os.makedirs(housing_full_path, exist_ok=True)
+    np.savez_compressed(f"{housing_full_path}housing.npz", x=X, y=Y)
+
+    unfavorable_housing_full_path = "./array_data/unfavorable_housing_full/"
+    os.makedirs(unfavorable_housing_full_path, exist_ok=True)
+    np.savez_compressed(f"{unfavorable_housing_full_path}unfavorable_housing_full.npz", x=X, y=Y)
+    
     print("Preprocessing Combined Cycle Power Plant dataset...")
     ccpp_path = "./raw_data/ccpp/"
     ccpp_preprocessed_path = "./array_data/ccpp/"
@@ -89,7 +108,14 @@ if __name__ == "__main__":
     Y = data[:, 4].reshape(-1, 1)
     np.savez_compressed(f"{ccpp_preprocessed_path}ccpp.npz", x=X, y=Y)
     print(f"Preprocessed CCPP data saved to {ccpp_preprocessed_path}ccpp.npz")
-    
+    mutual_info_scores_ccpp = [tsp(X[:, k].reshape(-1,1), Y) for k in range(X.shape[1])]
+    indices_ccpp = np.argsort(mutual_info_scores_ccpp)[::-1]
+    print("CCPP Feature ranking:")
+    for f in range(X.shape[1]): 
+        print(f"{f + 1}. feature {indices_ccpp[f]} ({mutual_info_scores_ccpp[indices_ccpp[f]]})")
+    print("Preprocessing Noisy CCPP dataset...")
+    X_unselected = X[:, indices_ccpp[-2:]]
     noisy_ccpp_path = "./array_data/noisy_ccpp/"
     os.makedirs(noisy_ccpp_path, exist_ok= True)
+
     np.savez_compressed(f"{noisy_ccpp_path}noisy_ccpp.npz", x=X, y=Y)    

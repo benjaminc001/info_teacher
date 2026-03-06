@@ -2,6 +2,7 @@ import os
 import torch
 import numpy as np
 from torch import nn
+from torch import amp
 from tqdm import tqdm
 from neural_networks.test import test
 from copy import deepcopy
@@ -22,6 +23,7 @@ def trainer(args, model, arrays):
     weight_decay = args.get('weight_decay', 0.0)
     batch_size = args.get('batch_size', 32)
 
+    scaler = amp.GradScaler()
     optimizer_name = args.get('optimizer', 'adamw')
     optimizer = build_optimizer_fcn(
         model,
@@ -74,10 +76,12 @@ def trainer(args, model, arrays):
         for inputs, targets in train_dataloader:
             inputs, targets = inputs.to(device), targets.to(device)
             optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
+            with amp.autocast(device_type=device):
+                outputs = model(inputs)
+                loss = criterion(outputs, targets)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
             running_loss += loss.item()*inputs.size(0)
         train_epoch_loss = running_loss / len(train_dataloader.dataset)
         train_epoch_loss = train_epoch_loss*(y_max - y_min)**2 

@@ -13,13 +13,20 @@ parser.add_argument("--set_rmse", default=True)
 args = parser.parse_args()
 network_name_base = str.lower(args.network_name)
 dataset_name_base = str.lower(args.dataset_name)
-results_path = f"./experiments/{dataset_name_base}/{network_name_base}/results_{args.optimizer_name}_{dataset_name_base}_{network_name_base}.npz"
+if network_name_base in ["linear","gbdt", "knn", "rf", "decision_tree"]:
+    results_path = f"./experiments/{dataset_name_base}/{network_name_base}/results_{dataset_name_base}_{network_name_base}.npz" 
+else:
+    results_path = f"./experiments/{dataset_name_base}/{network_name_base}/results_{args.optimizer_name}_{dataset_name_base}_{network_name_base}.npz"
+
 saving_path_root = f"./experiments/figures/{dataset_name_base}/"
 os.makedirs(saving_path_root, exist_ok=True)
-saving_path = os.path.join(saving_path_root, f"{dataset_name_base}_{network_name_base}_{args.optimizer_name}_fig.pdf")
+if network_name_base in ["linear","gbdt"]:
+    saving_path = os.path.join(saving_path_root,  f"{dataset_name_base}_{network_name_base}_fig.pdf")
+else:
+    saving_path = os.path.join(saving_path_root, f"{dataset_name_base}_{network_name_base}_{args.optimizer_name}_fig.pdf")
 
 
-is_synthetic = (dataset_name_base not in ["sarcos", "ccpp", "housing", "reduced_housing", "noisy_ccpp", "unfavorable_housing"])
+is_synthetic = (dataset_name_base not in ["sarcos", "ccpp", "housing", "reduced_housing_2","unfavorable_housing_2", "housing","unfavorable_housing_full", "reduced_housing", "noisy_ccpp", "unfavorable_housing", "unfavorable_sarcos"])
 
 def generate_figure(results_path, saving_path, set_rmse):
     metrics_dict = {"mi": "Mutual Information", 
@@ -48,6 +55,7 @@ def generate_figure(results_path, saving_path, set_rmse):
             else:
                 ax[i].plot(x, results_dict[metric][j, :])
 
+        ax[i].set_xscale("log")
         ax[i].set_title(metrics_dict[metric])
         ax[i].grid()
         
