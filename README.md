@@ -1,6 +1,6 @@
 # An Information-Driven Perspective to Evaluate Regression Algorithms
 
-[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This repository contains the source code and experimental framework developed for the thesis: **An Information-Driven Perspective to Evaluate Regression Algorithms**. 
@@ -24,7 +24,7 @@ The project implements a novel information-based criterion to evaluate optimalit
 
 ### Prerequisites
 - A Unix-based environment (Linux or macOS) is recommended for running the `.bash` scripts.
-- Python 3.9 or higher.
+- Python 3.10 or higher.
 
 ### Installation
 1. **Clone the repository:**
