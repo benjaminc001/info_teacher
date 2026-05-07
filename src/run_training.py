@@ -164,7 +164,7 @@ def build_network(**kwargs):
     elif args.network_name == "large":
         arg_mlp_network['hidden_sizes'] = [2048]*3
     elif args.network_name == "small":
-        arg_mlp_network["hidden_sizes"] = [2]
+        arg_mlp_network["hidden_sizes"] = [5]
     model = build_mlp_model(arg_mlp_network)
     if args.network_name == "resnet":
         model = build_resnet_model(arg_resnet_network)
