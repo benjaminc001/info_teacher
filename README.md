@@ -7,6 +7,9 @@ This repository contains the source code and experimental framework developed fo
 
 The project implements a novel information-based criterion to evaluate optimality in regression algorithms.
 
+**Acknowledgements:**
+
+The development of this project was supported by CONYCIT-Chile, Fondecyt 1250098. The author expresses gratitude for the institutional support provided during the completion of this thesis.
 ---
 
 ## 📂 Repository Structure
@@ -53,12 +56,27 @@ To automatically download and prepare all datasets, run:
 
 The experimental workflow is automated via Bash scripts located in the root directory. These scripts handle the sequence of execution and parameter passing to the Python modules in `src/`.
 
-To run the main experiment pipeline, use:
+The main experiment pipeline orchestrates the increasing training data scenario and executes the requested Python model.
+
+**Order of Arguments:**
+1. `Dataset`: Name of the dataset (e.g., `ccpp`, `sarcos`, `housing`).
+2. `Model`: Neural network architecture.
+3. `Optimizer`: `adam`, `sgd`, etc.
+4. `Learning Rate`: (e.g., `0.001`).
+5. `Weight Decay`: Regularization value (e.g., `1e-4`).
+6. `Epochs`: Total training iterations.
+7. `Patience`: Early stopping patience.
+8. `Device`: `cpu` or `cuda`.
+
+**Example:**
+```bash
+./run_all.sh california deep adam 0.001 0.0001 100 10 cpu
 
 ```bash
-chmod +x run_experiments.bash
-./run_experiments.bash
+chmod +x run_all.bash
+./run_all.bash
 ```
+
 
 > **Note:** Please ensure all data paths are correctly configured in the `.bash` files before execution.
 

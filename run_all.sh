@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# ==============================================================================
+# Script: run_all.sh
+# Description: Full pipeline from training to visualization.
+# Usage: ./run_all.sh <dataset> <model> <optimizer> <lr> <wd> <epochs> <patience> <device>
+# ==============================================================================
+
 # Asignación de variables
 DATASET=$1
 MODEL=$2
