@@ -43,6 +43,11 @@ The project implements a novel information-based criterion to evaluate optimalit
    ```
 
 ---
+## 📊 Data Initialization
+To automatically download and prepare all datasets, run:
+```bash
+./scripts/get_data.bash
+
 
 ## 🧪 Running Experiments
 
@@ -61,11 +66,18 @@ chmod +x run_experiments.bash
 
 ## 🛠️ Technical Stack
 
-- **Language:** Python 3.9
+- **Language:** Python 3.10.X
 - **Automation:** Bash Scripting
 - **Key Libraries:**  NumPy, PyTorch, Pandas, Numba, Matplotlib, SkLearn.
 
 ---
+
+## 📚 References
+
+### Datasets
+* **SARCOS:** Rasmussen, C. E., & Williams, C. K. I. (2006). *Gaussian Processes for Machine Learning*. MIT Press. [Data available at: http://www.gaussianprocess.org/gpml/data/]
+* **CCPP:** Kaya, H., Tüfekci, P., & Gürgen, F. S. (2014). Local and Global Learning Methods for Predicting Power of a Combined Cycle Power Plant. *International Journal of Electrical Power & Energy Systems*. [Dataset: UCI Machine Learning Repository]
+* **California Housing:** Pace, R. Kelley, and Ronald Barry (1997). Sparse spatial autoregressions. *Statistics & Probability Letters*. [Accessed via Scikit-learn]
 
 ## 🎓 Citation & Acknowledgments
 

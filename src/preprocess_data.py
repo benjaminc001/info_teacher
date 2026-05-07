@@ -47,7 +47,7 @@ if __name__ == "__main__":
     Y_test = data_test[:, 21].reshape(-1, 1)
     np.savez_compressed(f"{sarcos_preprocessed_path}sarcos_inv.npz", x=X_train, y=Y_train)
     np.savez_compressed(f"{sarcos_preprocessed_path}sarcos_inv_test.npz", x=X_test, y=Y_test)
-    print(f"Preprocessed SARcos Inverse Dynamics data saved to {sarcos_preprocessed_path}sarcos_inv.npz")
+    print(f"Preprocessed SARCOS Inverse Dynamics data saved to {sarcos_preprocessed_path}sarcos_inv.npz")
 
     print("Preprocessing Housing dataset...")
     #housing_path = "./raw_data/housing/"
