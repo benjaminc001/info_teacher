@@ -7,9 +7,8 @@ This repository contains the source code and experimental framework developed fo
 
 The project implements a novel information-based criterion to evaluate optimality in regression algorithms.
 
-**Acknowledgements:**
+**Acknowledgements:** The development of this project was supported by CONYCIT-Chile, Fondecyt 1250098. The author expresses gratitude for the institutional support provided during the completion of this thesis.
 
-The development of this project was supported by CONYCIT-Chile, Fondecyt 1250098. The author expresses gratitude for the institutional support provided during the completion of this thesis.
 ---
 
 ## 📂 Repository Structure
