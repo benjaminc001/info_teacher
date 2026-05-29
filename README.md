@@ -7,7 +7,7 @@ This repository contains the source code and experimental framework developed fo
 
 The project implements a novel information-based criterion to evaluate optimality in regression algorithms.
 
-**Acknowledgements:** The development of this project was supported by CONYCIT-Chile, Fondecyt 1250098. The author expresses gratitude for the institutional support provided during the completion of this thesis.
+**Acknowledgements:** The development of this project was supported by ANID-Chile, Fondecyt 1250098. The author expresses gratitude for the institutional support provided during the completion of this thesis.
 
 ---
 
@@ -17,6 +17,8 @@ The project implements a novel information-based criterion to evaluate optimalit
 - `*.bash`: Shell scripts used to orchestrate experiments and call Python functions.
 - `requirements.txt`: List of required Python dependencies.
 - `results/`: (Optional) Directory where experimental outputs are stored.
+- `raw_data/`: Folder where raw data is stored.
+- `array_data/`: Preprocessed data in .npz files for the experiments.
 
 ---
 
