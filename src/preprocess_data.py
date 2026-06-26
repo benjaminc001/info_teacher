@@ -68,5 +68,3 @@ if __name__ == "__main__":
     Y = data[:, 4].reshape(-1, 1)
     np.savez_compressed(f"{ccpp_preprocessed_path}ccpp.npz", x=X, y=Y)
     print(f"Preprocessed CCPP data saved to {ccpp_preprocessed_path}ccpp.npz")
-
-    np.savez_compressed(f"{noisy_ccpp_path}noisy_ccpp.npz", x=X, y=Y)
