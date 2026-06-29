@@ -8,7 +8,7 @@ import torch
 from metrics.tsp import mi_assessment as tsp
 from torch import optim
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, TimeSeriesSplit
 from sklearn.metrics import root_mean_squared_error
 
 parser = ArgumentParser()
@@ -16,7 +16,7 @@ parser.add_argument("--mode", default = "vanilla", type = str, help = "Mode for 
 parser.add_argument("--criterion", default = "rmse", type = str, help = "Early stopping Criterion, could be 'rmse' or 'rim'")
 parser.add_argument("--patience", default = 10, type = int, help = "Number of epochs with no improvement")
 parser.add_argument("--device", default = "cpu", type = str, help = "Device to perform the neural networks training, could be 'cpu' or 'cuda'")
-parser.add_argument("--lr", default = 1e-4, type = float, help = "Optimizer learning rate")
+parser.add_argument("--lr", default = 1e-3, type = float, help = "Optimizer learning rate")
 parser.add_argument("--num_epochs", default = 100, type = int, help = "Total number of epochs")
 
 args = parser.parse_args()
@@ -28,7 +28,7 @@ n_epochs = args.num_epochs
 patience = args.patience
 criterion = args.criterion
 
-n_split_seeds = 5
+n_split_seeds = 3
 n_param_seeds = 21
 
 split_seeds = np.random.default_rng(5).integers(2_001, 3_000, size = n_split_seeds, dtype = int)
@@ -80,6 +80,7 @@ def main():
     x_test = test_data["x"]
     y_test = test_data["y"]
 
+    y_test = y_test.reshape(-1, 1)
     epochs = range(n_epochs)
 
     results = {}
@@ -88,14 +89,17 @@ def main():
     rmse_test_ = np.zeros((n_param_seeds, n_split_seeds))
     epochs_counter = np.zeros((n_param_seeds, n_split_seeds))
 
-    for i, random_state in enumerate(split_seeds):
-        print(f"Split Seed ({i + 1} / {len(split_seeds)})")
-        x_train, x_val, y_train, y_val = train_test_split(x_train_total, y_train_total, test_size = 2_000, random_state = random_state, shuffle = True)
-        y_train, y_val, y_test = y_train.reshape(-1, 1), y_val.reshape(-1, 1), y_test.reshape(-1, 1)
+    timeseries_split = TimeSeriesSplit(n_splits = n_split_seeds, test_size = 2_000)
+    for i, (train_index, val_index) in enumerate(timeseries_split.split(x_train_total)):
+        x_train, x_val = x_train_total[train_index], x_train_total[val_index]
+        y_train, y_val = y_train_total[train_index], y_train_total[val_index]
+        print(f"Split Seed ({i + 1} / {n_split_seeds})")
+        print(f"train data length: {len(x_train)}, val data length: {len(x_val)}")
+        y_train, y_val = y_train.reshape(-1, 1), y_val.reshape(-1, 1)
         sc = StandardScaler()
         x_train = sc.fit_transform(x_train)
         x_val = sc.transform(x_val)
-        x_test = sc.transform(x_test)
+        x_test_scaled = sc.transform(x_test)
         min_max_sc = MinMaxScaler()
         y_train = min_max_sc.fit_transform(y_train)
         
@@ -115,7 +119,7 @@ def main():
             ep_no_improve = 0
             for ep in epochs:
                 if (ep + 1)%10 == 0:
-                    print(f"seed {seed}/{len(param_seeds)} // ep {ep + 1}/{len(epochs)}")
+                    print(f"seed {j+1}/{len(param_seeds)} // ep {ep + 1}/{len(epochs)}")
                 rmse_train =  train_epoch(dataloader = train_loader, model = model, loss_fn = torch.nn.MSELoss(), optimizer = optimizer, device = device)
                 rmse_val, rim_val =  validation(model = model, X_Arr = x_val, y_Arr = y_val, train_scaler = min_max_sc, device = device)
                 best_model_path = f"mode_{mode}_best_{criterion}_split_seed_{i}_seed_{j}.pth"
@@ -145,14 +149,14 @@ def main():
                 rim_val_list.append(rim_val)
             state_dict = torch.load(final_model_path)
             model.load_state_dict(state_dict)    
-            rmse_test, rim_test = validation(model=model, X_Arr=x_test, y_Arr=y_test, train_scaler=min_max_sc, device=device)
+            rmse_test, rim_test = validation(model=model, X_Arr=x_test_scaled, y_Arr=y_test, train_scaler=min_max_sc, device=device)
             
             rmse_test_[j, i] = rmse_test
             rim_test_[j, i] = rim_test
             epochs_counter[j, i] = ep_no_improve
             results[i][j] = {"train_loss": rmse_train_list, "val_loss": rmse_val_list, "val_rim": rim_val_list, "n_eps": len(rim_val_list), "best_ep": best_ep}
             print(f"rmse test: {rmse_test}, rim test: {rim_test}, best epoch: {best_ep}, best {criterion}: {min_loss}")
-    return results, rmse_test, rim_test, epochs_counter
+    return results, rmse_test_, rim_test_, epochs_counter
 
 if __name__ == "__main__":
     results, rmse_test, rim_test, epochs_counter = main()
@@ -160,5 +164,5 @@ if __name__ == "__main__":
     results_saving_path = os.path.join(final_path, f"mode_{mode}_criterion_{criterion}.npz")
     np.savez_compressed(results_saving_path, rmse_test = rmse_test, rim_test = rim_test, epochs_count = epochs_counter)
     with open(results_saving_pkl, "wb") as f:
-        pickle.dump(results, results_saving_pkl)
+        pickle.dump(results, f)
     print("Files saved successfully!")

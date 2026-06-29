@@ -32,3 +32,4 @@ htmlcov/
 *.txt
 !requirements.txt
 *.pkz
+*.pkl
